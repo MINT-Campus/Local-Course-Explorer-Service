@@ -64,7 +64,10 @@ class courses_provider extends external_api
 
                 $cardcontent = new stdClass();
                 $cardcontent->id = $course->id;
+                $cardcontent->tags = core_tag_tag::get_item_tags('core', 'course', $course->id);
+
                 $cardcontent->title = $course->fullname;
+                $cardcontent->shortname = $course->shortname;
                 $cardcontent->category = [
                     'id' => $coursecategory->id,
                     'value' => $coursecategory->name
@@ -81,9 +84,9 @@ class courses_provider extends external_api
                 $cardcontent->userEnrolled = is_enrolled($context, $userid);
 
                 $rating = $DB->get_record_sql(
-                    "SELECT 
-                            courseid, 
-                            COUNT(courseid) as reviewsnum, 
+                    "SELECT
+                            courseid,
+                            COUNT(courseid) as reviewsnum,
                             AVG(rating) AS score
                         FROM {format_mintcampus_ratings}
                         WHERE courseid = :courseid
@@ -134,6 +137,7 @@ class courses_provider extends external_api
                 [
                     'id' => new external_value(PARAM_INT, 'course id'),
                     'title' => new external_value(PARAM_TEXT, 'course title'),
+                    'shortname' => new external_value(PARAM_TEXT, 'short course title'),
                     'mcoriginal' => new external_value(PARAM_BOOL, 'produced by MINT-Campus'),
                     'category' => new external_single_structure(
                         [

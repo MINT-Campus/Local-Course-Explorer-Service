@@ -61,9 +61,18 @@ class courses_exporter extends external_api
                     $coursecategory = core_course_category::get($course->category);
                 }
 
+
                 $cardcontent = new stdClass();
                 $cardcontent->id = $course->id;
                 $cardcontent->title = $course->fullname;
+                $cardcontent->shortname = $course->shortname;
+                $tagrecords = core_tag_tag::get_item_tags('core', 'course', 13);
+                $tags = [];
+                foreach($tagrecords as $tag) {
+                    $tags[] = $tag->name;
+                }
+
+                $cardcontent->tags = implode(",", $tags);
                 $cardcontent->category = [
                     'id' => $coursecategory->id,
                     'value' => $coursecategory->name
@@ -145,6 +154,18 @@ class courses_exporter extends external_api
                 $cardcontent->mc_moodle_partner_name = self::_evaluate($metadata['mc_moodle_partner_name']);
                 $cardcontent->mc_moodle_partner_info = self::_evaluate(strip_tags($metadata['mc_moodle_partner_info']));
                 $cardcontent->mc_moodle_partner_bild = $metadata['mc_moodle_partner_image'] ?: $CFG->local_course_explorer_service_fallback_img_url;
+                $cardcontent->mc_moodle_partner_url2 = $metadata['mc_moodle_partner_url'];
+                $cardcontent->mc_moodle_partner_name2 = self::_evaluate($metadata['mc_moodle_partner_name2']);
+                $cardcontent->mc_moodle_partner_info2 = self::_evaluate(strip_tags($metadata['mc_moodle_partner_info2']));
+                $cardcontent->mc_moodle_partner_bild2 = $metadata['mc_moodle_partner_image2'] ?: $CFG->local_course_explorer_service_fallback_img_url;
+                $cardcontent->mc_moodle_partner_url3 = $metadata['mc_moodle_partner_url3'];
+                $cardcontent->mc_moodle_partner_name3 = self::_evaluate($metadata['mc_moodle_partner_name3']);
+                $cardcontent->mc_moodle_partner_info3 = self::_evaluate(strip_tags($metadata['mc_moodle_partner_info3']));
+                $cardcontent->mc_moodle_partner_bild3 = $metadata['mc_moodle_partner_image3'] ?: $CFG->local_course_explorer_service_fallback_img_url;
+                $cardcontent->mc_moodle_partner_url4 = $metadata['mc_moodle_partner_url4'];
+                $cardcontent->mc_moodle_partner_name4 = self::_evaluate($metadata['mc_moodle_partner_name4']);
+                $cardcontent->mc_moodle_partner_info4 = self::_evaluate(strip_tags($metadata['mc_moodle_partner_info4']));
+                $cardcontent->mc_moodle_partner_bild4 = $metadata['mc_moodle_partner_image4'] ?: $CFG->local_course_explorer_service_fallback_img_url;
                 $cardcontent->mc_moodle_empfehlungstext = $metadata['mc_moodle_emfehlungstext'] ?: get_string('fallback_recommendation', 'local_course_explorer_service');
                 $cardcontent->mc_moodle_empfehlungsabsender = $metadata['mc_moodle_emfehlungsabsender'] ?: get_string('fallback_recommendation_issuer', 'local_course_explorer_service');
                 $cardcontent->mc_moodle_empfehlungsbild = $metadata['mc_moodle_empfehlungsbild'] ?: $CFG->local_course_explorer_service_fallback_img_url;
@@ -154,9 +175,9 @@ class courses_exporter extends external_api
                 $cardcontent->mc_moodle_image = self::_format_mintcampus_get_image($course->id) ? self::_get_teaser_endpoint_url('image', $course->id) : self::_evaluate(null);
 
                 $rating = $DB->get_record_sql(
-                    "SELECT 
-                            courseid, 
-                            COUNT(courseid) as reviewsnum, 
+                    "SELECT
+                            courseid,
+                            COUNT(courseid) as reviewsnum,
                             AVG(rating) AS score
                         FROM {format_mintcampus_ratings}
                         WHERE courseid = :courseid
@@ -196,6 +217,7 @@ class courses_exporter extends external_api
                 [
                     'id' => new external_value(PARAM_INT, 'course id'),
                     'title' => new external_value(PARAM_TEXT, 'course title'),
+                    'shortname' => new external_value(PARAM_TEXT, 'course title'),
                     'featureimage' => new external_value(PARAM_TEXT, 'course teaser image'),
                     'mc_moodle_quelle' => new external_value(PARAM_RAW, 'image source (HTML + URL)'),
                     'content' => new external_value(PARAM_RAW, 'course description'),
@@ -206,6 +228,8 @@ class courses_exporter extends external_api
                             'value' => new external_value(PARAM_TEXT, 'value'),
                         ]
                     ),
+                    'tags' => new external_value(PARAM_TEXT, 'comma seperated tag list'),
+
                     'mc_moodle_dauer_text' => new external_value(PARAM_TEXT, 'course duration text'),
                     'mc_moodle_dauer' => new external_value(PARAM_INT, 'course duration id'),
                     'mc_moodle_lernziele' => new external_multiple_structure(
@@ -242,6 +266,18 @@ class courses_exporter extends external_api
                     'mc_moodle_partner_info' => new external_value(PARAM_TEXT, 'info about a creator'),
                     'mc_moodle_partner_bild' => new external_value(PARAM_TEXT, "creator's image/logo"),
                     'mc_moodle_partner_url' => new external_value(PARAM_TEXT, "URL or corresponding 'MINT Vernetzt' profile"),
+                    'mc_moodle_partner_name2' => new external_value(PARAM_TEXT, 'name of a course creator'),
+                    'mc_moodle_partner_info2' => new external_value(PARAM_TEXT, 'info about a creator'),
+                    'mc_moodle_partner_bild2' => new external_value(PARAM_TEXT, "creator's image/logo"),
+                    'mc_moodle_partner_url2' => new external_value(PARAM_TEXT, "URL or corresponding 'MINT Vernetzt' profile"),
+                    'mc_moodle_partner_name3' => new external_value(PARAM_TEXT, 'name of a course creator'),
+                    'mc_moodle_partner_info3' => new external_value(PARAM_TEXT, 'info about a creator'),
+                    'mc_moodle_partner_bild3' => new external_value(PARAM_TEXT, "creator's image/logo"),
+                    'mc_moodle_partner_url3' => new external_value(PARAM_TEXT, "URL or corresponding 'MINT Vernetzt' profile"),
+                    'mc_moodle_partner_name4' => new external_value(PARAM_TEXT, 'name of a course creator'),
+                    'mc_moodle_partner_info4' => new external_value(PARAM_TEXT, 'info about a creator'),
+                    'mc_moodle_partner_bild4' => new external_value(PARAM_TEXT, "creator's image/logo"),
+                    'mc_moodle_partner_url4' => new external_value(PARAM_TEXT, "URL or corresponding 'MINT Vernetzt' profile"),
                     'mc_moodle_empfehlungstext' => new external_value(PARAM_RAW, "Recommendation text"),
                     'mc_moodle_empfehlungsabsender' => new external_value(PARAM_TEXT, "Author of a recommendation"),
                     'mc_moodle_empfehlungsbild' => new external_value(PARAM_TEXT, "Recommendation image"),
